@@ -1,0 +1,95 @@
+# implementation of card game - Memory
+
+import simplegui
+import random
+
+card_list = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]
+text_list1 = [0, 1, 2, 3, 4, 5, 6, 7]
+text_list2 = [0, 1, 2, 3, 4, 5, 6, 7]
+list3 = [2, 3, 7, 1, 0, 2, 5, 0, 6, 4, 4, 3, 7, 6, 5, 1]
+exposed = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+firstcard = [0,0]
+seccard = [0,0]
+turn = 0
+image = simplegui.load_image('http://chetart.com/blog/wp-content/uploads/2012/05/playing-card-back.jpg')
+# helper function to initialize globals
+def new_game():
+    global text_list1, text_list2, list3, card_list, exposed, state, turn
+    state = 0
+    turn = 0
+    firstcard = [0,0]
+    seccard = [0,0]
+    for i in range(16):
+        card_list[i] = 25+50*i,100
+        exposed[i]=False
+    list3 = text_list1+text_list2
+    random.shuffle(list3)
+    
+     
+# define event handlers
+def mouseclick(pos):
+    num = pos[0]//50
+    global state, firstcard, seccard, list3, turn
+    if state==0:
+        exposed[num]=True
+        firstcard[0] = list3[num]
+        firstcard[1] = num
+        state=1
+    elif state==1:
+        if exposed[num] == False:            
+            exposed[num] = True
+            
+            state = 2
+        seccard[0] = firstcard[0]
+        seccard[1] = firstcard[1]
+        firstcard[0] = list3[num]
+        firstcard[1] = num
+        
+        
+    elif state ==2:
+
+        if firstcard[0]!=seccard[0]:
+            exposed[firstcard[1]]=False
+            exposed[seccard[1]]=False
+            
+        if exposed[num]==False:
+            exposed[num]=True
+            state = 1  
+            seccard[0] = firstcard[0]
+            seccard[1] = firstcard[1]
+            firstcard[0] = list3[num]
+            firstcard[1] = num
+            turn+=1
+        
+          
+# cards are logically 50x100 pixels in size    
+def draw(canvas):
+    global state, list3, card_list
+    width=0
+    for i in list3:
+            canvas.draw_text(str(i),[25+width,55],30,'White')
+            width+=50
+    for card in card_list:
+        if state==0:
+            canvas.draw_image(image,(125,150),(50,100),(25+50*(card[0]//50),50),(50,100))
+        elif state==1 and exposed[card_list.index(card)]==False:
+            canvas.draw_image(image,(125,150),(50,100),(25+50*(card[0]//50),50),(50,100))
+         
+        elif state==2 and exposed[card_list.index(card)]==False:
+            canvas.draw_image(image,(125,150),(50,100),(25+50*(card[0]//50),50),(50,100))
+            
+    label.set_text("Turn = "+str(turn))        
+# create frame and add a button and labels
+frame = simplegui.create_frame("Memory", 800, 100)
+frame.add_button("Restart", new_game)
+label = frame.add_label("Turn = 0")
+# register event handlers
+frame.set_mouseclick_handler(mouseclick)
+frame.set_draw_handler(draw)
+
+# get things rolling
+new_game()
+frame.start()
+
+
+# Always remember to review the grading rubric
